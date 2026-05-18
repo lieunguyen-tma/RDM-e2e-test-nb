@@ -220,6 +220,7 @@ jobs:
       WEKO_ENABLED: ${{ matrix.test-group.weko_enabled == true && 'true' || 'false' }}
       JUPYTERHUB_ENABLED: ${{ matrix.test-group.jupyterhub_enabled == true && 'true' || 'false' }}
       FLOWABLE_ENABLED: ${{ matrix.test-group.flowable_enabled == true && 'true' || 'false' }}
+      SKIP_METADATA: ${{ matrix.test-group.skip_metadata == true && 'true' || 'false' }}
       MINIO_ROOT_USER: e2eadmin
       MINIO_ROOT_PASSWORD: e2epassword123
       MINIO_ALIAS: ci-minio
@@ -329,7 +330,7 @@ jobs:
         fetch-depth: 0
 
     - name: Checkout WEKO repository
-      if: env.WEKO_ENABLED == 'true'
+      if: env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false'
       uses: actions/checkout@v4
       with:
         repository: RCOSDP/weko
@@ -344,7 +345,7 @@ jobs:
         path: RDM-flowable-gateway
 
     - name: Prepare WEKO compose
-      if: env.WEKO_ENABLED == 'true'
+      if: env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false'
       working-directory: e2e-tests
       run: |
         .github/scripts/setup_weko.sh prepare ../weko
@@ -889,13 +890,13 @@ jobs:
         test_rdm_endpoints
 
     - name: Install WEKO stack
-      if: env.WEKO_ENABLED == 'true'
+      if: env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false'
       working-directory: e2e-tests
       run: |
         .github/scripts/setup_weko.sh install ../weko
 
     - name: Configure WEKO connection info
-      if: env.WEKO_ENABLED == 'true'
+      if: env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false'
       run: |
         echo "WEKO_URL=https://192.168.168.167" >> $GITHUB_ENV
         echo "WEKO_ADMIN_EMAIL=wekosoftware@nii.ac.jp" >> $GITHUB_ENV  # gitleaks:allow
@@ -908,7 +909,7 @@ jobs:
         echo "IGNORE_HTTPS_ERRORS=true" >> $GITHUB_ENV
 
     - name: Verify RDM containers can connect to WEKO via HTTPS
-      if: env.WEKO_ENABLED == 'true'
+      if: env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false'
       working-directory: RDM-osf.io
       run: |
         set -xeu
@@ -1081,7 +1082,7 @@ jobs:
         if [ "${JUPYTERHUB_ENABLED}" = "true" ]; then
           args+=(--jupyterhub)
         fi
-        if [ "${WEKO_ENABLED}" = "true" ]; then
+        if [ "${WEKO_ENABLED}" = "true" ] || [ "${SKIP_METADATA}" = "false" ]; then
           args+=(--weko)
         fi
         if [ "${FLOWABLE_ENABLED}" = "true" ]; then
@@ -1219,13 +1220,13 @@ jobs:
         if-no-files-found: ignore
 
     - name: Collect WEKO logs
-      if: always() && env.WEKO_ENABLED == 'true'
+      if: always() && (env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false')
       working-directory: weko
       run: |
         docker compose -f docker-compose2.yml logs > ../e2e-tests/weko-docker-logs.txt 2>&1 || true
 
     - name: Upload WEKO logs
-      if: always() && env.WEKO_ENABLED == 'true'
+      if: always() && (env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false')
       uses: actions/upload-artifact@v4
       with:
         name: weko-logs-${{ matrix.test-group.name }}
@@ -1260,7 +1261,7 @@ jobs:
         retention-days: 7
 
     - name: Stop WEKO stack
-      if: always() && env.WEKO_ENABLED == 'true'
+      if: always() && (env.WEKO_ENABLED == 'true' || env.SKIP_METADATA == 'false')
       working-directory: e2e-tests
       run: |
         .github/scripts/setup_weko.sh down ../weko
