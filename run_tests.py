@@ -370,6 +370,14 @@ class TestRunner:
             self.result_notebooks.append(
                 self.run_notebook(
                     '取りまとめ-Metadataアドオン.ipynb',
+                    admin_rdm_url=self.admin_rdm_url,
+                    weko_url=self.weko_url,
+                    weko_admin_email=self.weko_admin_email,
+                    weko_admin_password=self.weko_admin_password,
+                    weko_index_name=self.weko_index_name,
+                    idp_name_institutional_admin=self.idp_name_institutional_admin,
+                    idp_username_institutional_admin=self.idp_username_institutional_admin,
+                    idp_password_institutional_admin=self.idp_password_institutional_admin,
                     idp_name_2=getattr(self, 'idp_name_2', None),
                     idp_username_2=getattr(self, 'idp_username_2', None),
                     idp_password_2=getattr(self, 'idp_password_2', None),
