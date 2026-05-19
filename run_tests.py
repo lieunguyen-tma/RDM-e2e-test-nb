@@ -384,6 +384,7 @@ class TestRunner:
                     skip_failed_test=self.skip_failed_test,
                     skip_erad_completion_test=self.skip_erad_completion_test,
                     exclude_notebooks=self.exclude_notebooks,
+                    ignore_https_errors=self.ignore_https_errors,
                 )
             )
             
