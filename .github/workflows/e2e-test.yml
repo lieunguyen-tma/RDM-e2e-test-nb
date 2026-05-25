@@ -90,7 +90,7 @@ jobs:
         test-group:
           - name: user
             display_name: "User Tests"
-            include_admin: false
+            include_admin: true
             skip_admin: true
             skip_metadata: false
             minio_enabled: false
@@ -151,7 +151,7 @@ jobs:
             flowable_enabled: false
           - name: user-minio
             display_name: "User Tests (MinIO)"
-            include_admin: false
+            include_admin: true
             skip_admin: true
             skip_metadata: false
             skip_default_storage: true
