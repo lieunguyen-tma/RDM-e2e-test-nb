@@ -386,7 +386,7 @@ class TestRunner:
                     skip_erad_completion_test=self.skip_erad_completion_test,
                     exclude_notebooks=self.exclude_notebooks,
                     weko_docker_compose_path=self.weko_docker_compose_path,
-                    sword_mapping_id=self.mibyo_db_sword_mapping_id,
+                    sword_mapping_id=self.sword_mapping_id,
                     ignore_https_errors=self.ignore_https_errors,
                 )
             )
