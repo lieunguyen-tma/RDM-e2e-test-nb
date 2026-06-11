@@ -62,6 +62,7 @@ class TestRunner:
         self.weko_index_name = None
         self.weko_docker_compose_path = None
         self.sword_mapping_id = 30002
+        self.mibyo_db_sword_mapping_id = 51000
         self.ignore_https_errors = False
         # S3CompatSigV4 specific parameters
         self.s3compatsigv4_enabled = False
@@ -385,7 +386,7 @@ class TestRunner:
                     skip_erad_completion_test=self.skip_erad_completion_test,
                     exclude_notebooks=self.exclude_notebooks,
                     weko_docker_compose_path=self.weko_docker_compose_path,
-                    sword_mapping_id=self.sword_mapping_id,
+                    sword_mapping_id=self.mibyo_db_sword_mapping_id,
                     ignore_https_errors=self.ignore_https_errors,
                 )
             )
