@@ -132,7 +132,7 @@ if obj is None:
     db.session.add(obj)
     db.session.commit()
     print('Created mapping 51000')
-else
+else:
     obj.mapping = mapping
     db.session.commit()
     print('Updated mapping 51000')
