@@ -112,18 +112,29 @@ db.session.commit()
 print('Updated mapping 30002')
 "
 
-    # Update SWORD mapping for item type 51000
+    # Insert/Update SWORD mapping for item type 51000
     echo "=== Updating SWORD Mapping 51000 ==="
     mapping_json=$(cat "${SCRIPT_DIR}/../patches/sword_mapping_51000.json")
     docker compose -f "${compose_file}" exec -T web invenio shell -c "
 from weko_records.api import JsonldMapping
+from weko_records.models import ItemTypeJsonldMapping
 import json
 mapping = json.loads('''${mapping_json}''')
 obj = JsonldMapping.get_mapping_by_id(51000)
-obj.mapping = mapping
-from invenio_db import db
-db.session.commit()
-print('Updated mapping 51000')
+if obj is None:
+    obj = ItemTypeJsonldMapping(
+        id = 51000,
+        name = '未病アイテムタイプ',
+        mapping = mapping,
+        item_type_id = 51000,
+    )
+    db.session.add(obj)
+    db.session.commit()
+    print('Created mapping 51000')
+else
+    obj.mapping = mapping
+    db.session.commit()
+    print('Updated mapping 51000')
 "
 
     # Grant contributor access to Sample Index
