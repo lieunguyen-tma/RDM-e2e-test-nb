@@ -118,6 +118,7 @@ print('Updated mapping 30002')
     docker compose -f "${compose_file}" exec -T web invenio shell -c "
 from weko_records.api import JsonldMapping
 from weko_records.models import ItemTypeJsonldMapping
+from invenio_db import db
 import json
 mapping = json.loads('''${mapping_json}''')
 obj = JsonldMapping.get_mapping_by_id(51000)
