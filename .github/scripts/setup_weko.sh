@@ -76,11 +76,11 @@ case "$COMMAND" in
     # Create AMS itemtype
     echo 'create ams itemtype'
     pg_container=$(docker compose -f "${compose_file}" ps -q postgresql)
-    docker cp "${WEKO_ROOT}/scripts/demo/ams/item_type_name.sql" "${pg_container}:/tmp/ams_itemtype_name.sql"
-    docker cp "${WEKO_ROOT}/scripts/demo/ams/item_type.sql" "${pg_container}:/tmp/ams_itemtype.sql"
-    docker cp "${WEKO_ROOT}/scripts/demo/ams/item_type_mapping.sql" "${pg_container}:/tmp/ams_itemtype_mapping.sql"
-    docker cp "${WEKO_ROOT}/scripts/demo/ams/rocrate_mapping.sql" "${pg_container}:/tmp/ams_rocrate_mapping.sql"
-    docker cp "${WEKO_ROOT}/scripts/demo/ams/facet_search_setting.sql" "${pg_container}:/tmp/ams_facet_search_setting.sql"
+    docker cp "${SCRIPT_DIR}/../patches/item_type_name.sql" "${pg_container}:/tmp/ams_itemtype_name.sql"
+    docker cp "${SCRIPT_DIR}/../patches/item_type.sql" "${pg_container}:/tmp/ams_itemtype.sql"
+    docker cp "${SCRIPT_DIR}/../patches/item_type_mapping.sql" "${pg_container}:/tmp/ams_itemtype_mapping.sql"
+    docker cp "${SCRIPT_DIR}/../patches/rocrate_mapping.sql" "${pg_container}:/tmp/ams_rocrate_mapping.sql"
+    docker cp "${SCRIPT_DIR}/../patches/facet_search_setting.sql" "${pg_container}:/tmp/ams_facet_search_setting.sql"
     docker compose -f "${compose_file}" exec -T postgresql psql -U invenio -d invenio -f /tmp/ams_itemtype_name.sql
     docker compose -f "${compose_file}" exec -T postgresql psql -U invenio -d invenio -f /tmp/ams_itemtype.sql
     docker compose -f "${compose_file}" exec -T postgresql psql -U invenio -d invenio -f /tmp/ams_itemtype_mapping.sql

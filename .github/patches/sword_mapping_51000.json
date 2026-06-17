@@ -1,8 +1,8 @@
 {
     "PubDate": "datePublished",
     "データセットの名称": "rdm:name",
-    "データセットの名称.タイトル": "rdm:name.value.value",
-    "データセットの名称.言語": "rdm:name.value.language",
+    "データセットの名称.タイトル": "rdm:name.value",
+    "データセットの名称.言語": "rdm:name.language",
     "プロジェクト名.プログラム情報識別子.プログラム情報識別子": "name.@id",
     "データID.関連名称.関連名称": "identifier",
     "メタデータ登録日.日付": "dateCreated",
