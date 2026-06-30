@@ -100,7 +100,7 @@ jobs:
             flowable_enabled: false
           - name: user-metadata
             display_name: "User Tests (Metadata)"
-            include_admin: false
+            include_admin: true
             skip_admin: true
             skip_metadata: false
             skip_autofill: false
