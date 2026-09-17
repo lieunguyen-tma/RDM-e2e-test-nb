@@ -118,7 +118,7 @@ async def logout(page, idp_name, transition_timeout=30000):
         await page.locator('//*[@data-test-ad-logout]').click()
     else:
         await page.locator('//div[@class = "nav-profile-name"]').click()
-        await page.locator('//*[contains(text(), "ログアウト")]').click()
+        await page.get_by_role("link", name="ログアウト").click()
 
     if idp_name == 'FakeCAS':
         await expect(page.locator('//button[@data-test-sign-in-button]')).to_be_visible(timeout=transition_timeout)
