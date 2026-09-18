@@ -114,7 +114,7 @@ jobs:
         test-group:
           - name: user
             display_name: "User Tests"
-            include_admin: false
+            include_admin: true
             skip_admin: true
             skip_metadata: false
             skip_autofill: true
@@ -224,7 +224,7 @@ jobs:
             wiki_enabled: false
           - name: user-minio
             display_name: "User Tests (MinIO)"
-            include_admin: false
+            include_admin: true
             skip_admin: true
             skip_metadata: false
             skip_autofill: true
@@ -1322,6 +1322,7 @@ jobs:
         idp_name_1: 'FakeCAS'
         idp_username_1: 'testuser1@example.com'
         idp_password_1: 'testpass123'
+        display_fullname_1: 'Test User 1'
 
         idp_name_2: 'FakeCAS'
         idp_username_2: 'testuser2@example.com'

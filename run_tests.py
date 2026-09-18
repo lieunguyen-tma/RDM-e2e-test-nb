@@ -101,6 +101,8 @@ class TestRunner:
         self.idp_name_project_limit_2 = None
         self.idp_username_project_limit_2 = None
         self.idp_password_project_limit_2 = None
+        
+        self.display_fullname_1 = None
 
         # Exclude notebooks
         self.exclude_notebooks = []
@@ -249,6 +251,11 @@ class TestRunner:
                     skip_preview_check=self.skip_preview_check,
                     too_large_file_upload_size=None,  # Disable large file test
                     exclude_notebooks=self.exclude_notebooks,
+                    admin_rdm_url=admin_rdm_url,
+                    idp_name_integrated_admin=idp_name_integrated_admin,
+                    idp_username_integrated_admin=idp_username_integrated_admin,
+                    idp_password_integrated_admin=idp_password_integrated_admin,
+                    username=display_fullname_1,
                 )
             )
             
@@ -293,6 +300,11 @@ class TestRunner:
                     s3compat_type_name_1=getattr(self, 's3compat_type_name_1', None) if storage_id == 's3compat' else None,
                     s3compat_type_name_2=getattr(self, 's3compat_type_name_2', None) if storage_id == 's3compat' else None,
                     skip_too_many_files_check=storage_info.get('skip_too_many_files_check', False),
+                    admin_rdm_url=admin_rdm_url,
+                    idp_name_integrated_admin=idp_name_integrated_admin,
+                    idp_username_integrated_admin=idp_username_integrated_admin,
+                    idp_password_integrated_admin=idp_password_integrated_admin,
+                    username=display_fullname_1,
                 )
             )
             
@@ -337,6 +349,11 @@ class TestRunner:
                 skip_130mb_upload=self.skip_130mb_upload,
                 skip_too_many_files_check=True,
                 exclude_notebooks=self.exclude_notebooks,
+                admin_rdm_url=admin_rdm_url,
+                idp_name_integrated_admin=idp_name_integrated_admin,
+                idp_username_integrated_admin=idp_username_integrated_admin,
+                idp_password_integrated_admin=idp_password_integrated_admin,
+                username=display_fullname_1,
             )
         )
 
@@ -374,6 +391,11 @@ class TestRunner:
                 target_organization=getattr(self, 'admin_target_organization', None),
                 skip_failed_test=self.skip_failed_test,
                 exclude_notebooks=self.exclude_notebooks,
+                admin_rdm_url=admin_rdm_url,
+                idp_name_integrated_admin=idp_name_integrated_admin,
+                idp_username_integrated_admin=idp_username_integrated_admin,
+                idp_password_integrated_admin=idp_password_integrated_admin,
+                username=display_fullname_1,
             )
         )
 
