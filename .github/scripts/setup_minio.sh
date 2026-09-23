@@ -29,8 +29,11 @@ if [[ ! -d "${RDM_ROOT}" ]]; then
   exit 1
 fi
 
-MINIO_IMAGE_DEFAULT=${MINIO_IMAGE:-minio/minio:latest}
-MINIO_MC_IMAGE_DEFAULT=${MINIO_MC_IMAGE:-minio/mc:latest}
+# Docker Hub anonymous pulls for minio/minio and minio/mc are denied by
+# upstream (MinIO Inc. moved official distribution to quay.io); default to
+# quay.io and allow override via MINIO_IMAGE / MINIO_MC_IMAGE if needed.
+MINIO_IMAGE_DEFAULT=${MINIO_IMAGE:-quay.io/minio/minio:latest}
+MINIO_MC_IMAGE_DEFAULT=${MINIO_MC_IMAGE:-quay.io/minio/mc:latest}
 
 MINIO_DOCKER_SNIPPET=$(cat <<YAML
   minio:
