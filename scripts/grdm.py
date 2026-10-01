@@ -659,3 +659,48 @@ async def move_file_to_storage(page, provider, filename_move):
     await page.reload()
     
     await expect(get_select_file_title_locator(page, filename_move)).to_be_visible(timeout=transition_timeout * 5)
+
+
+async def verify_download_log(page, username, rdm_project_name, path, target_storage_id, is_zip_download, bucket, transition_timeout=60000):
+    storage_templates = {
+        "osfstorage": (
+            f"{username}が{rdm_project_name}のNII Storageからファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のNII Storageからフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+        "s3": (
+            f"{username}が{rdm_project_name}のAmazon S3バケット{bucket}からファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のAmazon S3バケット{bucket}からフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+        "s3compat": (
+            f"{username}が{rdm_project_name}のS3互換ストレージバケット({bucket})からファイル({path})をダウンロードしました",
+            f"{username}が{rdm_project_name}のS3互換ストレージバケット({bucket})からフォルダ({path})をZIPとしてダウンロードしました",
+        ),
+        "s3compatsigv4": (
+            f"{username}が{rdm_project_name}のS3互換ストレージ(SigV4)バケット({bucket})からファイル({path})をダウンロードしました",
+            f"{username}が{rdm_project_name}のS3互換ストレージ(SigV4)バケット({bucket})からフォルダ({path})をZIPとしてダウンロードしました",
+        ),
+        "dropbox": (
+            f"{username}が{rdm_project_name}のDropboxからファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のDropboxからフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+        "googledrive": (
+            f"{username}が{rdm_project_name}のGoogle Driveからファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のGoogle Driveからフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+        "onedrive": (
+            f"{username}が{rdm_project_name}のMicrosoft OneDriveからファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のMicrosoft OneDriveからフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+        "nextcloud": (
+            f"{username}が{rdm_project_name}のNextcloudからファイル{path}をダウンロードしました",
+            f"{username}が{rdm_project_name}のNextcloudからフォルダ{path}をZIPとしてダウンロードしました",
+        ),
+    }
+
+    if target_storage_id not in storage_templates:
+        print(target_storage_id)
+        return
+    
+    file_msg, zip_msg = storage_templates[target_storage_id]
+    expected_message = zip_msg if is_zip_download else file_msg
+    await expect(page.locator("#logFeed")).to_contain_text(expected_message, timeout=transition_timeout)
