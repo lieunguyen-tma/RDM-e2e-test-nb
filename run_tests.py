@@ -389,7 +389,7 @@ class TestRunner:
         # NII Storage (default storage)
         self.result_notebooks.append(
             self.run_notebook(
-                '取りまとめ-ダウンロード履歴-ストレージ統合案.ipynb',
+                '取りまとめ-ダウンロード履歴-ストレージ統合.ipynb',
                 optional_result_id='-NII Storage',
                 target_storage_id='osfstorage',
                 admin_rdm_url=self.admin_rdm_url,
@@ -415,7 +415,7 @@ class TestRunner:
 
             self.result_notebooks.append(
                 self.run_notebook(
-                    '取りまとめ-ダウンロード履歴-ストレージ統合案.ipynb',
+                    '取りまとめ-ダウンロード履歴-ストレージ統合.ipynb',
                     optional_result_id=f'-{storage_name}',
                     target_storage_id=storage_id,
                     s3_access_key_1=access_key_1,
@@ -442,7 +442,7 @@ class TestRunner:
                 bucket = getattr(self, 's3compatsigv4_test_bucket_name_1', None)
                 self.result_notebooks.append(
                     self.run_notebook(
-                        '取りまとめ-ダウンロード履歴-ストレージ統合案.ipynb',
+                        '取りまとめ-ダウンロード履歴-ストレージ統合.ipynb',
                         optional_result_id='-S3 Compatible Storage (SigV4)',
                         target_storage_id='s3compatsigv4',
                         s3_access_key_1=access_key_1,
