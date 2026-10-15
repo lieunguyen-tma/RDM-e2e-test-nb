@@ -74,6 +74,12 @@ class TestRunner:
         self.gateway_base_url = None
         # Wiki specific parameters
         self.wiki_enabled = False
+        # Institutional admin authorization test
+        self.institutional_admin_authorization_enabled = False
+        self.user_guid = None
+        self.registration_provider_name = None
+        self.preprint_provider_name = None
+        self.collection_provider_name = None
         # Workflow admin user parameters
         self.idp_name_integrated_admin = None
         self.idp_username_integrated_admin = None
@@ -631,6 +637,52 @@ class TestRunner:
         )
             
 
+    def run_institutional_admin_authorization_tests(self):
+        """Run institutional admin authorization tests."""
+        print('\n=== Institutional Admin Authorization Tests ===')
+
+        if not self.institutional_admin_authorization_enabled:
+            print('Skipping institutional admin authorization tests (institutional_admin_authorization_enabled=false)')
+            return
+
+        missing_params = [
+            name for name in [
+                'idp_name_integrated_admin',
+                'idp_username_integrated_admin',
+                'idp_password_integrated_admin',
+                'idp_name_institutional_admin',
+                'idp_username_institutional_admin',
+                'idp_password_institutional_admin',
+                'user_guid',
+                'registration_provider_name',
+                'preprint_provider_name',
+                'collection_provider_name',
+            ]
+            if not getattr(self, name, None)
+        ]
+        if missing_params:
+            print('Error: Missing institutional admin authorization parameters: ' + ', '.join(missing_params))
+            sys.exit(1)
+
+        self.result_notebooks.append(
+            self.run_notebook(
+                '取りまとめ-管理者機能-機関管理者の適切な権限.ipynb',
+                admin_rdm_url=self.admin_rdm_url,
+                idp_name_integrated_admin=self.idp_name_integrated_admin,
+                idp_username_integrated_admin=self.idp_username_integrated_admin,
+                idp_password_integrated_admin=self.idp_password_integrated_admin,
+                idp_name_institutional_admin=self.idp_name_institutional_admin,
+                idp_username_institutional_admin=self.idp_username_institutional_admin,
+                idp_password_institutional_admin=self.idp_password_institutional_admin,
+                user_guid=self.user_guid,
+                registration_provider_name=self.registration_provider_name,
+                preprint_provider_name=self.preprint_provider_name,
+                collection_provider_name=self.collection_provider_name,
+                skip_failed_test=self.skip_failed_test,
+                exclude_notebooks=self.exclude_notebooks,
+            )
+        )
+
     def check_notebook_errors(self, notebook_path):
         """Check a notebook and all its sub-notebooks recursively for execution errors."""
         all_errors = []
@@ -736,6 +788,7 @@ class TestRunner:
         self.run_mibyo_db_tests()
         self.run_workflow_tests()
         self.run_wiki_tests()
+        self.run_institutional_admin_authorization_tests()
 
         result_notebooks = [result_notebook for result_notebook in self.result_notebooks if result_notebook is not None]
         
