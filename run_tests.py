@@ -69,6 +69,7 @@ class TestRunner:
         # S3CompatSigV4 specific parameters
         self.s3compatsigv4_enabled = False
         self.s3compatsigv4_institutional_storage_enabled = False
+        self.institutional_admin_authorization_enabled = False
         # Workflow specific parameters
         self.workflow_enabled = False
         self.gateway_base_url = None
@@ -81,6 +82,8 @@ class TestRunner:
         self.idp_name_institutional_admin = None
         self.idp_username_institutional_admin = None
         self.idp_password_institutional_admin = None
+        self.institution_id = None
+        self.other_institution_id = None
         # Non-admin user parameters (for workflow executor, etc.)
         self.idp_name_non_admin = None
         self.idp_username_non_admin = None
@@ -688,6 +691,43 @@ class TestRunner:
                 exclude_notebooks=self.exclude_notebooks,
             )
         )
+        
+    def run_institutional_admin_authorization_tests(self):
+        """Run institutional admin authorization tests."""
+        print('\n=== Institutional Admin Authorization Tests ===')
+        if not self.institutional_admin_authorization_enabled:
+            print('Skipping institutional admin authorization tests (institutional_admin_authorization_enabled=false)')
+            return
+
+        missing_params = [
+            name for name in [
+                'idp_name_institutional_admin',
+                'idp_username_institutional_admin',
+                'idp_password_institutional_admin',
+                'institution_id',
+                'other_institution_id',
+                'institution_name',
+            ]
+            if not getattr(self, name, None)
+        ]
+        if missing_params:
+            print('Error: Missing institutional admin authorization parameters: ' + ', '.join(missing_params))
+            sys.exit(1)
+
+        self.result_notebooks.append(
+            self.run_notebook(
+                '取りまとめ-管理者機能-機関管理者の適切な権限.ipynb',
+                admin_rdm_url=self.admin_rdm_url,
+                idp_name_institutional_admin=self.idp_name_institutional_admin,
+                idp_username_institutional_admin=self.idp_username_institutional_admin,
+                idp_password_institutional_admin=self.idp_password_institutional_admin,
+                institution_id=self.institution_id,
+                institution_name=self.institution_name,
+                other_institution_id=self.other_institution_id,
+                skip_failed_test=self.skip_failed_test,
+                exclude_notebooks=self.exclude_notebooks,
+            )
+        )
 
     def check_notebook_errors(self, notebook_path):
         """Check a notebook and all its sub-notebooks recursively for execution errors."""
@@ -795,6 +835,7 @@ class TestRunner:
         self.run_workflow_tests()
         self.run_mapcore_group_tests()
         self.run_wiki_tests()
+        self.run_institutional_admin_authorization_tests()
 
         result_notebooks = [result_notebook for result_notebook in self.result_notebooks if result_notebook is not None]
         
