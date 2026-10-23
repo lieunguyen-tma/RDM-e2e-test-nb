@@ -77,6 +77,7 @@ class TestRunner:
         # Institutional admin authorization test
         self.institutional_admin_authorization_enabled = False
         self.user_guid = None
+        self.user_name = None
         self.registration_provider_name = None
         self.preprint_provider_name = None
         self.collection_provider_name = None
@@ -654,6 +655,7 @@ class TestRunner:
                 'idp_username_institutional_admin',
                 'idp_password_institutional_admin',
                 'user_guid',
+                'user_name',
                 'registration_provider_name',
                 'preprint_provider_name',
                 'collection_provider_name',
@@ -675,6 +677,7 @@ class TestRunner:
                 idp_username_institutional_admin=self.idp_username_institutional_admin,
                 idp_password_institutional_admin=self.idp_password_institutional_admin,
                 user_guid=self.user_guid,
+                user_name=self.user_name,
                 registration_provider_name=self.registration_provider_name,
                 preprint_provider_name=self.preprint_provider_name,
                 collection_provider_name=self.collection_provider_name,

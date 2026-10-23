@@ -225,6 +225,8 @@ if INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED:
     if user is None:
         raise RuntimeError('Provider setup failed: user not found: testuser2@example.com')
 
+    print(f"USER_GUID_testuser2@example.com: {user._id}")
+
     project = user.nodes.filter(category='project', is_deleted=False).first()
     if project is None:
         raise RuntimeError('Provider setup failed: project of user not found: testuser2@example.com')
