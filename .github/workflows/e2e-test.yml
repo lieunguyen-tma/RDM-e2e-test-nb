@@ -225,7 +225,7 @@ jobs:
             jupyterhub_enabled: false
             flowable_enabled: false
             wiki_enabled: false
-            institutional_admin_authorization_enabled: true
+            institutional_admin_authorization_enabled: false
             exclude_notebooks: |
               テスト手順-管理者機能-ログイン可否設定.ipynb
               テスト手順-管理者機能-ノード管理.ipynb
@@ -458,6 +458,22 @@ jobs:
             flowable_enabled: false
             wiki_enabled: false
             institutional_admin_authorization_enabled: false
+          - name: admin-institutional-admin-authorization
+            display_name: "Admin Tests (Institutional Admin Authorization)"
+            include_admin: true
+            skip_admin: true
+            skip_metadata: true
+            skip_default_storage: true
+            skip_login: true
+            skip_130mb_upload: true
+            minio_enabled: false
+            s3compatsigv4_institutional_storage: false
+            weko_enabled: false
+            mibyo_db_enabled: false
+            jupyterhub_enabled: false
+            flowable_enabled: false
+            wiki_enabled: false
+            institutional_admin_authorization_enabled: true
     name: E2E ${{ matrix.test-group.display_name }}
     env:
       MINIO_ENABLED: ${{ matrix.test-group.minio_enabled == true && 'true' || 'false' }}
@@ -1359,12 +1375,20 @@ jobs:
           echo "PROJECT_ID_2: ${PROJECT_ID_2}"
           exit 1
         fi
-        
+
+        # Extract user guid from output (only printed when INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED=true)
+        USER_GUID=$(grep "USER_GUID_testuser2@example.com:" /tmp/setup_output.txt | cut -d' ' -f2)
+        if [ "${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" = "true" ] && [ -z "${USER_GUID}" ]; then
+          echo "Error: Failed to fetch user GUID for testuser2@example.com" >&2
+          exit 1
+        fi
+
         # Export for later steps
         echo "PROJECT_ID_1=${PROJECT_ID_1}" >> $GITHUB_ENV
         echo "PROJECT_ID_2=${PROJECT_ID_2}" >> $GITHUB_ENV
         echo "PROJECT_NAME_1=${PROJECT_NAME_1}" >> $GITHUB_ENV
         echo "PROJECT_NAME_2=${PROJECT_NAME_2}" >> $GITHUB_ENV
+        echo "USER_GUID=${USER_GUID}" >> $GITHUB_ENV
         
         echo "Projects created successfully:"
         echo "  testuser1: ${PROJECT_ID_1} - ${PROJECT_NAME_1}"
@@ -1402,6 +1426,8 @@ jobs:
         idp_name_integrated_admin: 'FakeCAS'
         idp_username_integrated_admin: 'testuser1@example.com'
         idp_password_integrated_admin: 'testpass123'
+        idp_username_integrated_admin_2: 'testuser7@example.com'
+        idp_password_integrated_admin_2: 'testpass123'
         idp_name_institutional_admin: 'FakeCAS'
         idp_username_institutional_admin: 'teststaff@example.com'
         idp_password_institutional_admin: 'testpass789'
@@ -1445,16 +1471,11 @@ jobs:
         storages_oauth: []
         EOF
 
-        if [ "${{ matrix.test-group.institutional_admin_authorization_enabled }}" = "true" ]; then
-          USER_GUID=$(cd ../RDM-osf.io && docker-compose exec -T web python3 -c \
-            "from osf.models import OSFUser; u = OSFUser.objects.get(username='testuser2@example.com'); print(u._id)" \
-            | tr -d '\r')
-          if [ -z "${USER_GUID}" ]; then
-            echo "Error: Failed to fetch user GUID for testuser2@example.com" >&2
-            exit 1
-          fi
-          cat >> base_ci.config.yaml << EOF
-        user_guid: '${USER_GUID}'
+        if [ "${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" = "true" ]; then
+        cat >> base_ci.config.yaml <<'EOF' 
+        user_guid: '${{ env.USER_GUID }}'
+        user_name: 'testuser2@example.com'
+        integrated_admin_user_name: 'testuser1@example.com'
         registration_provider_name: 'OSF Registries'
         preprint_provider_name: 'Open Science Framework'
         collection_provider_name: 'OSF Collection'

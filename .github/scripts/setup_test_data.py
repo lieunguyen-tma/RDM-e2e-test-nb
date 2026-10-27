@@ -72,6 +72,17 @@ test_users = [
         'institution': 'Massachusetts Institute of Technology [Test]',
         'skip_project': True,  # Dedicated user for project limit tests; no pre-created project
     },
+    {
+        'username': 'testuser7@example.com',
+        'fullname': 'Test User 7',
+        'given_name': 'Test',
+        'family_name': 'User 7',
+        'given_name_ja': 'テスト',
+        'family_name_ja': 'ユーザー7',
+        'password': 'testpass123',
+        'is_superuser': True,
+        'skip_project': True,
+    },
 ]
 
 def create_rdmuserkey(user):
@@ -224,6 +235,8 @@ if INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED:
     user = OSFUser.objects.filter(username='testuser2@example.com').first()
     if user is None:
         raise RuntimeError('Provider setup failed: user not found: testuser2@example.com')
+
+    print(f"USER_GUID_testuser2@example.com: {user._id}")
 
     project = user.nodes.filter(category='project', is_deleted=False).first()
     if project is None:

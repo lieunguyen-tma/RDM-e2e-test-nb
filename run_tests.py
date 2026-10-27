@@ -77,6 +77,7 @@ class TestRunner:
         # Institutional admin authorization test
         self.institutional_admin_authorization_enabled = False
         self.user_guid = None
+        self.user_name = None
         self.registration_provider_name = None
         self.preprint_provider_name = None
         self.collection_provider_name = None
@@ -84,6 +85,9 @@ class TestRunner:
         self.idp_name_integrated_admin = None
         self.idp_username_integrated_admin = None
         self.idp_password_integrated_admin = None
+        self.idp_username_integrated_admin_2 = None
+        self.idp_password_integrated_admin_2 = None
+        self.integrated_admin_user_name = None
         self.idp_name_institutional_admin = None
         self.idp_username_institutional_admin = None
         self.idp_password_institutional_admin = None
@@ -650,10 +654,14 @@ class TestRunner:
                 'idp_name_integrated_admin',
                 'idp_username_integrated_admin',
                 'idp_password_integrated_admin',
+                'idp_username_integrated_admin_2',
+                'idp_password_integrated_admin_2',
+                'integrated_admin_user_name',
                 'idp_name_institutional_admin',
                 'idp_username_institutional_admin',
                 'idp_password_institutional_admin',
                 'user_guid',
+                'user_name',
                 'registration_provider_name',
                 'preprint_provider_name',
                 'collection_provider_name',
@@ -671,10 +679,14 @@ class TestRunner:
                 idp_name_integrated_admin=self.idp_name_integrated_admin,
                 idp_username_integrated_admin=self.idp_username_integrated_admin,
                 idp_password_integrated_admin=self.idp_password_integrated_admin,
+                idp_username_integrated_admin_2=self.idp_username_integrated_admin_2,
+                idp_password_integrated_admin_2=self.idp_password_integrated_admin_2,
+                integrated_admin_user_name=self.integrated_admin_user_name,
                 idp_name_institutional_admin=self.idp_name_institutional_admin,
                 idp_username_institutional_admin=self.idp_username_institutional_admin,
                 idp_password_institutional_admin=self.idp_password_institutional_admin,
                 user_guid=self.user_guid,
+                user_name=self.user_name,
                 registration_provider_name=self.registration_provider_name,
                 preprint_provider_name=self.preprint_provider_name,
                 collection_provider_name=self.collection_provider_name,
