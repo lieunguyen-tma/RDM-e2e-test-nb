@@ -94,6 +94,8 @@ class TestRunner:
         self.idp_name_institutional_admin = None
         self.idp_username_institutional_admin = None
         self.idp_password_institutional_admin = None
+        self.institution_id = None
+        self.other_institution_id = None
         # Non-admin user parameters (for workflow executor, etc.)
         self.idp_name_non_admin = None
         self.idp_username_non_admin = None
@@ -745,6 +747,9 @@ class TestRunner:
                 'registration_provider_name',
                 'preprint_provider_name',
                 'collection_provider_name',
+                'institution_id',
+                'other_institution_id',
+                'institution_name',
             ]
             if not getattr(self, name, None)
         ]
@@ -770,6 +775,9 @@ class TestRunner:
                 registration_provider_name=self.registration_provider_name,
                 preprint_provider_name=self.preprint_provider_name,
                 collection_provider_name=self.collection_provider_name,
+                institution_id=self.institution_id,
+                institution_name=self.institution_name,
+                other_institution_id=self.other_institution_id,
                 skip_failed_test=self.skip_failed_test,
                 exclude_notebooks=self.exclude_notebooks,
             )

@@ -4,6 +4,7 @@ from framework.auth import Auth
 from osf.models import OSFUser, Node, Institution, CollectionProvider, Collection, RegistrationProvider, RegistrationSchema, PreprintProvider, Preprint
 from osf.models.registrations import DraftRegistration
 from website import settings
+from addons.osfstorage.models import Region
 
 WIKI_ENABLED = os.environ.get('WIKI_ENABLED', 'false').lower() == 'true'
 INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED = os.environ.get('INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED', 'false').lower() == 'true'
@@ -305,7 +306,8 @@ for user_data in test_users:
         print(f"User {user.username} already affiliated with {inst.name}")
 
 # Create provider/registration/preprint/collection data for institutional admin authorization CI tests
-# Only executed when running the "admin" test group (INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED=true)
+# Setting institution storage to s3compatsigv4 for institutional admin authorization CI tests
+# Only executed when running the "admin-institutional-admin-authorization" test group (INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED=true)
 if INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED:
     user = OSFUser.objects.filter(username='testuser2@example.com').first()
     if user is None:
@@ -433,3 +435,60 @@ if INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED:
         print(f"Added project {project._id} to collection {COLLECTION_PROVIDER_ID}")
     else:
         print(f"Project {project._id} already in collection {COLLECTION_PROVIDER_ID}")
+        
+    # Set institution storage to s3compatsigv4
+    S3COMPATSIGV4_INST_STORAGE_NAME = os.environ.get('S3COMPATSIGV4_INST_STORAGE_NAME', 'MinIO (CI)')
+    S3COMPATSIGV4_INST_HOST = os.environ.get('S3COMPATSIGV4_INST_HOST', 'minio:9000')
+    S3COMPATSIGV4_INST_ACCESS_KEY = os.environ.get('S3COMPATSIGV4_INST_ACCESS_KEY', 'accesskey')
+    S3COMPATSIGV4_INST_SECRET_KEY = os.environ.get('S3COMPATSIGV4_INST_SECRET_KEY', 'secretkey')
+    S3COMPATSIGV4_INST_BUCKET = os.environ.get('S3COMPATSIGV4_INST_BUCKET', 'bucket-test')
+    S3COMPATSIGV4_INST_REGION = os.environ.get('S3COMPATSIGV4_INST_REGION', 'us-east-1')
+
+    try:
+        s3_institution = Institution.objects.get(name=INSTITUTION_NAME)
+    except Institution.DoesNotExist:
+        raise RuntimeError(f"Institution '{INSTITUTION_NAME}' not found")
+    print(f"INSTITUTION_ID_VT: {s3_institution.id}")
+
+    try:
+        other_institution = Institution.objects.get(name='Massachusetts Institute of Technology [Test]')
+    except Institution.DoesNotExist:
+        raise RuntimeError("Institution 'Massachusetts Institute of Technology [Test]' not found")
+    print(f"INSTITUTION_ID_MIT: {other_institution.id}")
+
+    s3_institution_guid = s3_institution._id
+    wb_credentials = {
+        'storage': {
+            'access_key': S3COMPATSIGV4_INST_ACCESS_KEY,
+            'secret_key': S3COMPATSIGV4_INST_SECRET_KEY,
+            'host': S3COMPATSIGV4_INST_HOST,
+        }
+    }
+    wb_settings = {
+        'storage': {
+            'folder': '',
+            'encrypt_uploads': False,
+            'bucket': S3COMPATSIGV4_INST_BUCKET,
+            'provider': 's3compatsigv4',
+            'type': Region.INSTITUTIONS,
+            'region': S3COMPATSIGV4_INST_REGION,
+        }
+    }
+    try:
+        region = Region.objects.get(_id=s3_institution_guid)
+        region.name = S3COMPATSIGV4_INST_STORAGE_NAME
+        region.waterbutler_credentials = wb_credentials
+        region.waterbutler_settings = wb_settings
+        region.save()
+        print(f"Updated Region storage to s3compatsigv4 for institution: {s3_institution_guid}")
+    except Region.DoesNotExist:
+        default_region = Region.objects.first()
+        Region.objects.create(
+            _id=s3_institution_guid,
+            name=S3COMPATSIGV4_INST_STORAGE_NAME,
+            waterbutler_credentials=wb_credentials,
+            waterbutler_url=default_region.waterbutler_url,
+            mfr_url=default_region.mfr_url,
+            waterbutler_settings=wb_settings,
+        )
+        print(f"Created Region storage s3compatsigv4 for institution: {s3_institution_guid}")
