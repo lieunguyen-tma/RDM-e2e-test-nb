@@ -513,7 +513,7 @@ jobs:
             skip_default_storage: true
             skip_login: true
             skip_130mb_upload: true
-            minio_enabled: false
+            minio_enabled: true
             s3compatsigv4_institutional_storage: false
             weko_enabled: false
             mibyo_db_enabled: false
@@ -539,6 +539,7 @@ jobs:
       MINIO_ROOT_PASSWORD: e2epassword123
       MINIO_ALIAS: ci-minio
       MINIO_ENDPOINT: http://minio:9000
+      MINIO_HOST: minio:9000
       MINIO_REGION: us-east-1
       MINIO_SERVICE_NAME: MinIO (CI)
 
@@ -868,7 +869,17 @@ jobs:
         docker cp ${{ github.workspace }}/e2e-tests/.github/scripts/setup_test_data.py "$(docker-compose ps -q web)":/tmp/setup_test_data.py
 
         # Create test data that will be migrated
-        docker-compose exec -T -e WIKI_ENABLED="${WIKI_ENABLED}" -e MAPCORE_GROUP_ENABLED="${MAPCORE_GROUP_ENABLED}" -e INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED="${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" web bash -c "python3 manage.py shell < /tmp/setup_test_data.py"
+        docker-compose exec -T \
+          -e WIKI_ENABLED="${WIKI_ENABLED}" \
+          -e MAPCORE_GROUP_ENABLED="${MAPCORE_GROUP_ENABLED}" \
+          -e INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED="${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" \
+          -e S3COMPATSIGV4_INST_STORAGE_NAME="${MINIO_SERVICE_NAME}" \
+          -e S3COMPATSIGV4_INST_HOST="${MINIO_HOST}" \
+          -e S3COMPATSIGV4_INST_ACCESS_KEY="${S3COMPATSIGV4_INST_ACCESS_KEY}" \
+          -e S3COMPATSIGV4_INST_SECRET_KEY="${S3COMPATSIGV4_INST_SECRET_KEY}" \
+          -e S3COMPATSIGV4_INST_BUCKET="${S3COMPATSIGV4_INST_BUCKET}" \
+          -e S3COMPATSIGV4_INST_REGION="${MINIO_REGION}" \
+          web bash -c "python3 manage.py shell < /tmp/setup_test_data.py"
 
         echo "Migration source test data created"
 
@@ -1216,7 +1227,7 @@ jobs:
         echo "S3COMPAT_SERVICE_NAME=${MINIO_SERVICE_NAME}" >> $GITHUB_ENV
 
     - name: Initialize MinIO for S3CompatSigV4 tests
-      if: env.MINIO_ENABLED == 'true' && (env.S3COMPATSIGV4_ENABLED == 'true' || env.S3COMPATSIGV4_INST_ENABLED == 'true')
+      if: env.MINIO_ENABLED == 'true' && (env.S3COMPATSIGV4_ENABLED == 'true' || env.S3COMPATSIGV4_INST_ENABLED == 'true' || env.INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED == 'true')
       working-directory: e2e-tests
       run: |
         set -eu
@@ -1259,7 +1270,7 @@ jobs:
           echo "S3COMPATSIGV4_SERVICE_NAME=${MINIO_SERVICE_NAME}" >> $GITHUB_ENV
         fi
 
-        if [ "${S3COMPATSIGV4_INST_ENABLED}" = "true" ]; then
+        if [ "${S3COMPATSIGV4_INST_ENABLED}" = "true" ] || [ "${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" = "true" ]; then
           INST_ACCESS_KEY="ci$(key_part)"
           INST_SECRET_KEY="$(secret_part)"
           INST_BUCKET="${BUCKET_PREFIX}-inst"
@@ -1412,14 +1423,24 @@ jobs:
         docker cp ${{ github.workspace }}/e2e-tests/.github/scripts/setup_test_data.py "$(docker-compose ps -q web)":/tmp/setup_test_data.py
 
         # Execute the script and capture project IDs
-        docker-compose exec -T -e WIKI_ENABLED="${WIKI_ENABLED}" -e MAPCORE_GROUP_ENABLED="${MAPCORE_GROUP_ENABLED}" -e INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED="${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" web bash -c "python3 manage.py shell < /tmp/setup_test_data.py" | tee /tmp/setup_output.txt
+        docker-compose exec -T \
+          -e WIKI_ENABLED="${WIKI_ENABLED}" \
+          -e MAPCORE_GROUP_ENABLED="${MAPCORE_GROUP_ENABLED}" \
+          -e INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED="${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" \
+          -e S3COMPATSIGV4_INST_STORAGE_NAME="${MINIO_SERVICE_NAME}" \
+          -e S3COMPATSIGV4_INST_HOST="${MINIO_HOST}" \
+          -e S3COMPATSIGV4_INST_ACCESS_KEY="${S3COMPATSIGV4_INST_ACCESS_KEY}" \
+          -e S3COMPATSIGV4_INST_SECRET_KEY="${S3COMPATSIGV4_INST_SECRET_KEY}" \
+          -e S3COMPATSIGV4_INST_BUCKET="${S3COMPATSIGV4_INST_BUCKET}" \
+          -e S3COMPATSIGV4_INST_REGION="${MINIO_REGION}" \
+          web bash -c "python3 manage.py shell < /tmp/setup_test_data.py" | tee /tmp/setup_output.txt
         
         # Extract project IDs and names from output
         PROJECT_ID_1=$(grep "PROJECT_ID_testuser1@example.com:" /tmp/setup_output.txt | cut -d' ' -f2)
         PROJECT_ID_2=$(grep "PROJECT_ID_testuser2@example.com:" /tmp/setup_output.txt | cut -d' ' -f2)
         PROJECT_NAME_1=$(grep "PROJECT_NAME_testuser1@example.com:" /tmp/setup_output.txt | cut -d' ' -f2-)
         PROJECT_NAME_2=$(grep "PROJECT_NAME_testuser2@example.com:" /tmp/setup_output.txt | cut -d' ' -f2-)
-        
+
         # Verify project IDs were created
         if [ -z "${PROJECT_ID_1}" ] || [ -z "${PROJECT_ID_2}" ]; then
           echo "ERROR: Failed to create projects for test users"
@@ -1433,7 +1454,7 @@ jobs:
         echo "PROJECT_ID_2=${PROJECT_ID_2}" >> $GITHUB_ENV
         echo "PROJECT_NAME_1=${PROJECT_NAME_1}" >> $GITHUB_ENV
         echo "PROJECT_NAME_2=${PROJECT_NAME_2}" >> $GITHUB_ENV
-        
+
         echo "Projects created successfully:"
         echo "  testuser1: ${PROJECT_ID_1} - ${PROJECT_NAME_1}"
         echo "  testuser2: ${PROJECT_ID_2} - ${PROJECT_NAME_2}"
@@ -1446,6 +1467,20 @@ jobs:
             exit 1
           fi
           echo "USER_GUID=${USER_GUID}" >> $GITHUB_ENV
+
+          INSTITUTION_ID=$(grep "INSTITUTION_ID_VT:" /tmp/setup_output.txt | cut -d' ' -f2)
+          OTHER_INSTITUTION_ID=$(grep "INSTITUTION_ID_MIT:" /tmp/setup_output.txt | cut -d' ' -f2)
+          if [ -z "${INSTITUTION_ID}" ] || [ -z "${OTHER_INSTITUTION_ID}" ]; then
+            echo "ERROR: Failed to retrieve institution IDs"
+            echo "INSTITUTION_ID: ${INSTITUTION_ID}"
+            echo "OTHER_INSTITUTION_ID: ${OTHER_INSTITUTION_ID}"
+            exit 1
+          fi
+          echo "INSTITUTION_ID=${INSTITUTION_ID}" >> $GITHUB_ENV
+          echo "OTHER_INSTITUTION_ID=${OTHER_INSTITUTION_ID}" >> $GITHUB_ENV
+          echo "Institution IDs captured:"
+          echo "  Virginia Tech [Test]: ${INSTITUTION_ID}"
+          echo "  MIT [Test]: ${OTHER_INSTITUTION_ID}"
         fi
 
     - name: Register e-Rad data
@@ -1527,7 +1562,7 @@ jobs:
         rdm_project_url_1: 'http://192.168.168.167:5000/${{ env.PROJECT_ID_1 }}/'
         rdm_project_name_1: '${{ env.PROJECT_NAME_1 }}'
         rdm_project_url_2: 'http://192.168.168.167:5000/${{ env.PROJECT_ID_2 }}/'
-        
+
         # Test settings for ${{ matrix.test-group.name }} group
         skip_failed_test: true  # Continue on failure
         transition_timeout: ${{ matrix.test-group.mibyo_db_enabled && 120000 || 60000 }}
@@ -1556,11 +1591,13 @@ jobs:
         registration_provider_name: 'OSF Registries'
         preprint_provider_name: 'Open Science Framework'
         collection_provider_name: 'OSF Collection'
+        institution_id: ${{ env.INSTITUTION_ID }}
+        other_institution_id: ${{ env.OTHER_INSTITUTION_ID }}
         EOF
         fi
 
         args=(ci.config.yaml base_ci.config.yaml)
-        if [ "${MINIO_ENABLED}" = "true" ]; then
+        if [ "${MINIO_ENABLED}" = "true" ] && [ "${INSTITUTIONAL_ADMIN_AUTHORIZATION_ENABLED}" = "false" ]; then
           args+=(--minio)
         fi
         if [ "${JUPYTERHUB_ENABLED}" = "true" ]; then
